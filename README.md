@@ -1,67 +1,125 @@
-# API Dockerizada con CICD
+# Dockerized API with CI/CD
 
-Proyecto ejemplo: una API construida con FastAPI, preparada para ejecutarse con Docker y orquestada mediante `docker-compose`. Incluye pruebas básicas y está pensada para integrarse en un pipeline de CI/CD.
+Example project: a simple API built with FastAPI, prepared to run in Docker and orchestrated with `docker-compose`. Includes basic tests and is designed to be integrated into a CI/CD pipeline.
 
-**Características**
-- **Lenguaje:** Python 3
+**Features**
+- **Language:** Python 3
 - **Framework:** FastAPI
-- **Servidor ASGI:** Uvicorn
-- **Contenedores:** Docker, Docker Compose
+- **ASGI server:** Uvicorn
+- **Containers:** Docker, Docker Compose
 - **Tests:** pytest
 
-**Requisitos**
-- Docker y Docker Compose instalados localmente
-- Python 3.8+ (para ejecución local)
+**Requirements**
+- Docker and Docker Compose installed locally
+- Python 3.8+ (for local execution)
 
-**Instalación (local)**
+**Local installation**
 ```bash
-# crear y activar entorno virtual
+# create and activate a virtual environment
 python3 -m venv .venv
 source .venv/bin/activate
 
-# instalar dependencias
+# install dependencies
 pip install -r requirements.txt
 
-# arrancar la API en desarrollo
+# start the API for development
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-**Ejecución con Docker (recomendado)**
+**Run with Docker (recommended)**
 ```bash
+# build and start services (service is named 'api' in docker-compose.yml)
 docker-compose up --build
+
+# or in detached mode
+docker-compose up -d --build
+
+# stop and remove containers
+docker-compose down
 ```
 
-Después de levantar la aplicación, la API estará disponible en `http://localhost:8000`.
+The application will be available at `http://localhost:8000`.
 
-**Ejecutar tests**
+To build and run the image manually:
 ```bash
-pytest -q
+docker build -t myapi:latest .
+docker run --rm -p 8000:8000 myapi:latest
 ```
 
-**Endpoints principales**
-- `GET /` : Mensaje de estado de la API
-- `GET /health` : Estado de salud (returns {"status": "ok"})
-- `GET /version` : Versión de la API
-- `GET /users/` : Lista de usuarios de ejemplo (definido en `app/routes/users.py`)
+**Docker files**
+- `Dockerfile`: uses `python:3.12-slim`, installs `requirements.txt` and runs `uvicorn` on port `8000`.
+- `docker-compose.yml`: defines the `api` service, maps port `8000` and loads environment variables from `.env`.
 
-**Estructura del proyecto**
-- `Dockerfile` : Imagen de la aplicación
-- `docker-compose.yml` : Orquestación de contenedores
-- `requirements.txt` : Dependencias Python
-- `app/` : Código fuente de la aplicación
-  - `app/main.py` : Punto de entrada FastAPI
-  - `app/routes/users.py` : Rutas de ejemplo para usuarios
-- `tests/` : Pruebas (ej. `tests/test_health.py`)
+**Environment variables**
+If you use a `.env` file (referenced by `docker-compose.yml`) you can add values like:
+```
+# .env (example)
+HOST=0.0.0.0
+PORT=8000
+```
 
-**Buenas prácticas / CI**
-- Añadir un workflow de CI (GitHub Actions, GitLab CI, etc.) que:
-  - Construya la imagen Docker
-  - Ejecute los tests con `pytest`
-  - Publique artefactos o despliegue si los tests pasan
+**Run tests**
+```bash
+# local
+pytest -q
 
-**Contribuciones**
-- Abre un Issue antes de implementar cambios significativos.
-- Envía un Pull Request con pruebas y descripciones claras.
+# from Docker (option: run pytest inside the app container)
+docker-compose run --rm api pytest -q
+```
 
-**Licencia**
-Este repositorio usa licencia MIT (añadir archivo `LICENSE` si procede).
+This project contains a health test at `tests/test_health.py` which verifies that `GET /health` returns `200` and `{"status": "ok"}`.
+
+**Main endpoints (examples)**
+- `GET /` — Basic API status
+
+  Example:
+  ```bash
+  curl -s http://localhost:8000/
+  # => {"message": "API running"}
+  ```
+
+- `GET /health` — Health check
+
+  Example:
+  ```bash
+  curl -s http://localhost:8000/health
+  # => {"status": "ok"}
+  ```
+
+- `GET /version` — API version
+
+  Example:
+  ```bash
+  curl -s http://localhost:8000/version
+  # => {"version": "1.0.0"}
+  ```
+
+- `GET /users/` — Example users list (defined in `app/routes/users.py`)
+
+  Example:
+  ```bash
+  curl -s http://localhost:8000/users/
+  # => [{"id":1,"name":"Alice"},{"id":2,"name":"Bob"}]
+  ```
+
+**Project structure**
+- `Dockerfile` : Application image
+- `docker-compose.yml` : Services orchestration
+- `requirements.txt` : Python dependencies
+- `app/` : Application source code
+  - `app/main.py` : FastAPI entry point
+  - `app/routes/users.py` : Example user routes
+- `tests/` : Tests (e.g. `tests/test_health.py`)
+
+**CI / Best practices**
+- Add a CI workflow (GitHub Actions, GitLab CI, etc.) that:
+  - Builds the Docker image
+  - Runs tests with `pytest`
+  - Publishes artifacts or deploys when tests pass
+
+**Contributing**
+- Open an Issue before implementing significant changes.
+- Submit a Pull Request with tests and clear descriptions.
+
+**License**
+This repository uses the MIT License (add a `LICENSE` file if not present).
