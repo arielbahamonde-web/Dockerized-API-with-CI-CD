@@ -28,30 +28,30 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 **Run with Docker (recommended)**
 ```bash
-# build and start services (service is named 'api' in docker-compose.yml)
-docker-compose up --build
+# build and start services (service is named 'api' in deploy/docker-compose.yml)
+docker compose -f deploy/docker-compose.yml up --build
 
 # or in detached mode
-docker-compose up -d --build
+docker compose -f deploy/docker-compose.yml up -d --build
 
 # stop and remove containers
-docker-compose down
+docker compose -f deploy/docker-compose.yml down
 ```
 
 The application will be available at `http://localhost:8000`.
 
 To build and run the image manually:
 ```bash
-docker build -t myapi:latest .
+docker build -f build/Dockerfile -t myapi:latest .
 docker run --rm -p 8000:8000 myapi:latest
 ```
 
-**Docker files**
-- `Dockerfile`: uses `python:3.12-slim`, installs `requirements.txt` and runs `uvicorn` on port `8000`.
-- `docker-compose.yml`: defines the `api` service, maps port `8000` and loads environment variables from `.env`.
+**Build / deployment files**
+- `build/Dockerfile`: uses `python:3.12-slim`, installs `requirements.txt` and runs `uvicorn` on port `8000`.
+- `deploy/docker-compose.yml`: defines the `api` service, maps port `8000` and loads environment variables from `.env`.
 
 **Environment variables**
-If you use a `.env` file (referenced by `docker-compose.yml`) you can add values like:
+If you use a `.env` file (referenced by `deploy/docker-compose.yml`) you can add values like:
 ```
 # .env (example)
 HOST=0.0.0.0
@@ -64,7 +64,7 @@ PORT=8000
 pytest -q
 
 # from Docker (option: run pytest inside the app container)
-docker-compose run --rm api pytest -q
+docker compose -f deploy/docker-compose.yml run --rm api pytest -q
 ```
 
 This project contains a health test at `tests/test_health.py` which verifies that `GET /health` returns `200` and `{"status": "ok"}`.
@@ -103,8 +103,8 @@ This project contains a health test at `tests/test_health.py` which verifies tha
   ```
 
 **Project structure**
-- `Dockerfile` : Application image
-- `docker-compose.yml` : Services orchestration
+- `build/Dockerfile` : Application image definition
+- `deploy/docker-compose.yml` : Services orchestration
 - `requirements.txt` : Python dependencies
 - `app/` : Application source code
   - `app/main.py` : FastAPI entry point
