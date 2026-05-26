@@ -2,7 +2,7 @@
 
 Thanks for contributing. This file lists people who have contributed directly to the project.
 
-- Ariel — Initial maintainer
+- Ariel Bahamonde — Initial maintainer
 
 If you want to be listed here, open a Pull Request or create an Issue describing your contribution.
 
